@@ -2,41 +2,50 @@ import SwiftUI
 import SwiftData
 
 struct PasswordDetailView: View {
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) var modelContext
     let item: PasswordItem
+    
     @State private var isPasswordVisible: Bool = false
     @State private var showingEditSheet: Bool = false
     
     var decryptedPassword: String {
-        EncryptionService.shared.decrypt(item.encryptedPassword) ?? "Error Decrypting"
+        EncryptionService.shared.decrypt(item.encryptedPassword) ?? "********"
     }
     
     var body: some View {
-        List {
-            Section {
-                DetailRow(label: "Account", value: item.accountName, icon: "globe")
-                DetailRow(label: "Username", value: item.username, icon: "person")
+        VStack(alignment: .leading, spacing: 24) {
+            Text("Account Details")
+                .font(.system(size: 19, weight: .bold))
+                .foregroundStyle(AppColors.highlightBlue)
+                .padding(.top, 10)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Account Type")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(AppColors.textSecondary)
+                Text(item.accountName)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(AppColors.textMain)
             }
             
-            Section(header: Text("Password")) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Username/ Email")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(AppColors.textSecondary)
+                Text(item.username)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(AppColors.textMain)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Password")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(AppColors.textSecondary)
                 HStack {
-                    Image(systemName: "lock")
-                        .foregroundStyle(.blue)
-                        .frame(width: 24)
-                    
-                    VStack(alignment: .leading) {
-                        Text("Password")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        
-                        if isPasswordVisible {
-                            Text(decryptedPassword)
-                                .font(.body)
-                                .monospaced()
-                        } else {
-                            Text("••••••••")
-                                .font(.body)
-                        }
-                    }
+                    Text(isPasswordVisible ? decryptedPassword : "********")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(AppColors.textMain)
                     
                     Spacer()
                     
@@ -44,74 +53,55 @@ struct PasswordDetailView: View {
                         isPasswordVisible.toggle()
                     } label: {
                         Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(AppColors.textMain)
+                            .frame(width: 14, height: 13)
                     }
-                    .buttonStyle(.plain)
-                    
-                    Divider()
-                        .frame(height: 20)
-                    
-                    Button {
-                        UIPasteboard.general.string = decryptedPassword
-                    } label: {
-                        Image(systemName: "doc.on.doc")
-                            .foregroundStyle(.blue)
-                    }
-                    .buttonStyle(.plain)
                 }
-                .padding(.vertical, 4)
             }
-        }
-        .navigationTitle(item.accountName)
-        .toolbar {
-            Button("Edit") {
-                showingEditSheet = true
-            }
-        }
-        .sheet(isPresented: $showingEditSheet) {
-            AddEditPasswordView(item: item)
-        }
-    }
-}
-
-struct DetailRow: View {
-    let label: String
-    let value: String
-    let icon: String
-    
-    var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .foregroundStyle(.blue)
-                .frame(width: 24)
             
-            VStack(alignment: .leading) {
-                Text(label)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(value)
-                    .font(.body)
-            }
             Spacer()
             
-            Button {
-                UIPasteboard.general.string = value
-            } label: {
-                Image(systemName: "doc.on.doc")
-                    .foregroundStyle(.secondary)
+            HStack(spacing: 18) {
+                Button(action: {
+                    showingEditSheet = true
+                }) {
+                    Text("Edit")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(AppColors.buttonDark)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 1)
+                }
+                
+                Button(action: {
+                    modelContext.delete(item)
+                    dismiss()
+                }) {
+                    Text("Delete")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(AppColors.deleteRed)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 1)
+                }
             }
-            .buttonStyle(.plain)
         }
-        .padding(.vertical, 4)
+        .padding(30)
+        .background(Color(hex: "F9F9F9"))
+        .sheet(isPresented: $showingEditSheet) {
+            AddEditPasswordView(item: item)
+                .presentationDetents([.height(400)])
+                .presentationDragIndicator(.visible)
+        }
     }
 }
 
 #Preview {
-    let encrypted = EncryptionService.shared.encrypt("Secret123!") ?? ""
-    let item = PasswordItem(accountName: "Example Account", username: "user@example.com", encryptedPassword: encrypted)
-    
-    return NavigationStack {
-        PasswordDetailView(item: item)
-    }
-    .modelContainer(for: PasswordItem.self, inMemory: true)
+    let context = try! ModelContainer(for: PasswordItem.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true)).mainContext
+    let item = PasswordItem(accountName: "Facebook", username: "Amitshah165@maill.com", encryptedPassword: "")
+    return PasswordDetailView(item: item)
 }

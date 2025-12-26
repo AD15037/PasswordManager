@@ -12,83 +12,82 @@ struct AddEditPasswordView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            Form {
-                Section(header: Text("Account Details")) {
-                    TextField("Account Name (e.g. Google)", text: $viewModel.accountName)
-                    TextField("Username / Email", text: $viewModel.username)
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.emailAddress)
-                }
-                
-                Section(header: Text("Password")) {
-                    HStack {
-                        if isPasswordVisible {
-                            TextField("Password", text: $viewModel.passwordInput)
-                        } else {
-                            SecureField("Password", text: $viewModel.passwordInput)
-                        }
-                        
-                        Button(action: { isPasswordVisible.toggle() }) {
-                            Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
-                                .foregroundStyle(.secondary)
-                        }
+        VStack(spacing: 20) {
+            // Field: Account Name
+            VStack(alignment: .leading, spacing: 8) {
+                CustomTextField(placeholder: "Account Name", text: $viewModel.accountName)
+            }
+            
+            // Field: Username / Email
+            VStack(alignment: .leading, spacing: 8) {
+                CustomTextField(placeholder: "Username/ Email", text: $viewModel.username)
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.emailAddress)
+            }
+            
+            // Field: Password
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    if isPasswordVisible {
+                        TextField("Password", text: $viewModel.passwordInput)
+                    } else {
+                        SecureField("Password", text: $viewModel.passwordInput)
                     }
                     
-                    if !viewModel.passwordInput.isEmpty {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Strength: \(Int(viewModel.passwordStrength * 100))%")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            GeometryReader { geometry in
-                                ZStack(alignment: .leading) {
-                                    Rectangle()
-                                        .frame(width: geometry.size.width, height: 4)
-                                        .opacity(0.3)
-                                        .foregroundStyle(.gray)
-                                    
-                                    Rectangle()
-                                        .frame(width: geometry.size.width * viewModel.passwordStrength, height: 4)
-                                        .foregroundStyle(colorForStrength(viewModel.passwordStrength))
-                                }
-                            }
-                            .frame(height: 4)
-                            .clipShape(RoundedRectangle(cornerRadius: 2))
-                        }
-                        .padding(.vertical, 4)
-                    }
-                    
-                    Button("Generate Strong Password") {
-                        viewModel.passwordInput = PasswordGenerator.shared.generate()
-                        isPasswordVisible = true
+                    Button(action: { isPasswordVisible.toggle() }) {
+                        Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
+                            .foregroundStyle(AppColors.textSecondary)
                     }
                 }
+                .padding(.horizontal, 16)
+                .frame(height: 44)
+                .background(Color.white)
+                .cornerRadius(6)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color(hex: "CBCBCB"), lineWidth: 0.6)
+                )
             }
-            .navigationTitle(viewModel.isEditing ? "Edit Password" : "Add Password")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-                
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        viewModel.save(context: modelContext)
-                        dismiss()
-                    }
-                    .disabled(!viewModel.isValid)
-                }
+            
+            Spacer()
+            
+            // Action Button
+            Button(action: {
+                viewModel.save(context: modelContext)
+                dismiss()
+            }) {
+                Text(viewModel.isEditing ? "Update Account" : "Add New Account")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background(AppColors.buttonDark)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 1)
             }
+            .disabled(!viewModel.isValid)
+            .opacity(viewModel.isValid ? 1.0 : 0.5)
         }
+        .padding(30)
+        .background(Color(hex: "F9F9F9"))
     }
+}
+
+struct CustomTextField: View {
+    let placeholder: String
+    @Binding var text: String
     
-    private func colorForStrength(_ strength: Double) -> Color {
-        if strength < 0.3 { return .red }
-        if strength < 0.6 { return .orange }
-        if strength < 0.8 { return .yellow }
-        return .green
+    var body: some View {
+        TextField(placeholder, text: $text)
+            .padding(.horizontal, 16)
+            .frame(height: 44)
+            .background(Color.white)
+            .cornerRadius(6)
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(Color(hex: "CBCBCB"), lineWidth: 0.6)
+            )
+            .font(.system(size: 13, weight: .medium))
     }
 }
 
