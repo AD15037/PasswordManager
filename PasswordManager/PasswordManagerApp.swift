@@ -1,11 +1,5 @@
-//
-//  PasswordManagerApp.swift
-//  PasswordManager
-//
-//  Created by Atharv Dwivedi on 26/12/25.
-//
-
 import SwiftUI
+import SwiftData
 
 @main
 struct PasswordManagerApp: App {
@@ -13,5 +7,6 @@ struct PasswordManagerApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: PasswordItem.self)
     }
 }
