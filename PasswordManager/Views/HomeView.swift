@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-struct ContentView: View {
+struct HomeView: View {
     @State private var searchText = ""
     @State private var showAddSheet = false
     @State private var selectedItem: PasswordItem?
@@ -138,6 +138,6 @@ struct PasswordRow: View {
 }
 
 #Preview {
-    ContentView()
+    HomeView()
         .modelContainer(for: PasswordItem.self, inMemory: true)
 }

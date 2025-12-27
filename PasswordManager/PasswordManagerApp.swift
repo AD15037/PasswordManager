@@ -5,7 +5,7 @@ import SwiftData
 struct PasswordManagerApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HomeView()
         }
         .modelContainer(for: PasswordItem.self)
     }
