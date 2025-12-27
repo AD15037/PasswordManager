@@ -44,8 +44,4 @@ A secure and intuitive iOS password manager application built with SwiftUI and S
 - **UI Framework**: SwiftUI
 - **Data Persistence**: SwiftData
 - **Architecture Pattern**: MVVM (Model-View-ViewModel)
-- **Encryption**: AES (via CryptoKit/CommonCrypto or custom implementation)
-
-## License
-
-This project is for educational and evaluation purposes.
+- **Encryption**: AES (via CryptoKit)
