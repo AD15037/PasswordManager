@@ -11,6 +11,24 @@ struct AddEditPasswordView: View {
         _viewModel = State(initialValue: AddEditPasswordViewModel(item: item))
     }
     
+    private var strengthColor: Color {
+        switch viewModel.passwordStrength {
+        case ..<0.3: return .red
+        case ..<0.6: return .orange
+        case ..<0.8: return .yellow
+        default: return .green
+        }
+    }
+    
+    private var strengthLabel: String {
+        switch viewModel.passwordStrength {
+        case ..<0.3: return "Weak"
+        case ..<0.6: return "Fair"
+        case ..<0.8: return "Good"
+        default: return "Strong"
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 20) {
             // Field: Account Name
@@ -47,6 +65,19 @@ struct AddEditPasswordView: View {
                     RoundedRectangle(cornerRadius: 6)
                         .stroke(Color(hex: "CBCBCB"), lineWidth: 0.6)
                 )
+                
+                if !viewModel.passwordInput.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ProgressView(value: viewModel.passwordStrength)
+                            .tint(strengthColor)
+                        
+                        Text(strengthLabel)
+                            .font(.caption)
+                            .foregroundStyle(strengthColor)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                    }
+                    .padding(.top, 4)
+                }
             }
             
             Spacer()
